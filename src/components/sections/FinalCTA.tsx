@@ -2,9 +2,11 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
-import { ArrowRight, CheckCircle, Mail, Phone, Calendar, Users, MapPin } from "lucide-react";
+import { ArrowRight, CheckCircle, Mail, Phone } from "lucide-react";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function FinalCTA() {
+  const { t } = useLanguage();
   const [submitted, setSubmitted] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -37,15 +39,15 @@ export default function FinalCTA() {
 
       <div className="relative z-10 max-w-4xl mx-auto w-full text-center flex flex-col items-center">
         <span className="text-xs uppercase tracking-[0.25em] text-[#C88219] font-bold mb-4 block">
-          Your Ethiopian Odyssey
+          {t.cta.badge}
         </span>
 
         <h2 className="text-3xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-white mb-6 leading-tight">
-          Ready to Explore Ethiopia with Nu-Enezur?
+          {t.cta.title}
         </h2>
 
         <p className="max-w-2xl text-stone-200 text-sm sm:text-base font-light leading-relaxed mb-12">
-          Whether you want a private day excursion through Addis Ababa or a bespoke 14-day traverse across the Omo Valley, Danakil Depression, and Lalibela, our local expedition directors are ready to craft your journey.
+          {t.cta.subtitle}
         </p>
 
         {submitted ? (
@@ -54,10 +56,10 @@ export default function FinalCTA() {
               <CheckCircle className="w-6 h-6" />
             </div>
             <h3 className="text-2xl font-bold text-white mb-2">
-              Amesegenalehu! (Thank You)
+              {t.cta.successTitle}
             </h3>
             <p className="text-xs text-stone-300 font-light leading-relaxed">
-              We have received your inquiry. A Nu-Enezur expedition designer will reach out with a customized itinerary within 24 hours.
+              {t.cta.successDesc}
             </p>
           </div>
         ) : (
@@ -68,12 +70,12 @@ export default function FinalCTA() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="text-[10px] uppercase font-bold text-stone-500 tracking-wider block mb-1.5">
-                  Full Name
+                  {t.cta.nameLabel}
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Eleanor Vance"
+                  placeholder={t.cta.namePlaceholder}
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-xs text-stone-900 focus:outline-none focus:border-[#C88219] transition-colors"
@@ -82,12 +84,12 @@ export default function FinalCTA() {
 
               <div>
                 <label className="text-[10px] uppercase font-bold text-stone-500 tracking-wider block mb-1.5">
-                  Email Address
+                  {t.cta.emailLabel}
                 </label>
                 <input
                   type="email"
                   required
-                  placeholder="e.g. eleanor@domain.com"
+                  placeholder={t.cta.emailPlaceholder}
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-xs text-stone-900 focus:outline-none focus:border-[#C88219] transition-colors"
@@ -98,7 +100,7 @@ export default function FinalCTA() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="text-[10px] uppercase font-bold text-stone-500 tracking-wider block mb-1.5">
-                  Preferred Route / Destination
+                  {t.cta.destLabel}
                 </label>
                 <input
                   type="text"
@@ -110,11 +112,11 @@ export default function FinalCTA() {
 
               <div>
                 <label className="text-[10px] uppercase font-bold text-stone-500 tracking-wider block mb-1.5">
-                  Expected Travel Dates
+                  {t.cta.datesLabel}
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. October 2026"
+                  placeholder={t.cta.datesPlaceholder}
                   value={formData.dates}
                   onChange={(e) => setFormData({ ...formData, dates: e.target.value })}
                   className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-xs text-stone-900 focus:outline-none focus:border-[#C88219] transition-colors"
@@ -124,11 +126,11 @@ export default function FinalCTA() {
 
             <div>
               <label className="text-[10px] uppercase font-bold text-stone-500 tracking-wider block mb-1.5">
-                Special Requests or Interests
+                {t.cta.messageLabel}
               </label>
               <textarea
                 rows={3}
-                placeholder="Tell us about your interests: Photography, Hiking, Coffee, Cultural Ceremonies..."
+                placeholder={t.cta.messagePlaceholder}
                 value={formData.message}
                 onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                 className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-3 text-xs text-stone-900 focus:outline-none focus:border-[#C88219] transition-colors resize-none"
@@ -139,7 +141,7 @@ export default function FinalCTA() {
               type="submit"
               className="w-full bg-[#143823] hover:bg-[#C88219] text-white font-bold uppercase tracking-wider text-xs py-4 px-6 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 group shadow-lg cursor-pointer mt-2"
             >
-              <span>Submit Tour Request</span>
+              <span>{t.cta.submitBtn}</span>
               <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
             </button>
 

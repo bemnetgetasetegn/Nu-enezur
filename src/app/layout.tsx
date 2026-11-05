@@ -4,6 +4,7 @@ import "./globals.css";
 import SmoothScroll from "@/components/animations/SmoothScroll";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import { LanguageProvider } from "@/context/LanguageContext";
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -37,11 +38,13 @@ export default function RootLayout({
   return (
     <html lang="en" className={jakarta.variable}>
       <body className="font-sans antialiased selection:bg-[#C88219] selection:text-white">
-        <SmoothScroll>
-          <Navbar />
-          <main className="min-h-screen flex flex-col">{children}</main>
-          <Footer />
-        </SmoothScroll>
+        <LanguageProvider>
+          <SmoothScroll>
+            <Navbar />
+            <main className="min-h-screen flex flex-col">{children}</main>
+            <Footer />
+          </SmoothScroll>
+        </LanguageProvider>
       </body>
     </html>
   );

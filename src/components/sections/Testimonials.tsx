@@ -4,8 +4,10 @@ import React, { useState } from "react";
 import Image from "next/image";
 import { ArrowLeft, ArrowRight, Quote, Star } from "lucide-react";
 import { testimonials } from "@/data/ethiopia";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function Testimonials() {
+  const { t } = useLanguage();
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const prev = () => {
@@ -17,16 +19,19 @@ export default function Testimonials() {
   };
 
   const active = testimonials[currentIndex];
+  const activeTrans = t.testimonials.quotes[active.id] || {};
+  const displayQuote = activeTrans.quote || active.quote;
+  const displayTour = activeTrans.tourTaken || active.tourTaken;
 
   return (
     <section id="testimonials" className="py-24 md:py-32 bg-[#EFE9DB] text-stone-900 px-6 md:px-14">
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-12">
           <span className="text-xs font-bold text-[#C88219] uppercase tracking-wider block mb-2">
-            Guest Testimonials
+            {t.testimonials.badge}
           </span>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-[#143823]">
-            Chronicles From Fellow Travelers
+            {t.testimonials.title}
           </h2>
         </div>
 
@@ -34,7 +39,7 @@ export default function Testimonials() {
           <Quote className="w-12 h-12 text-[#C88219] opacity-30 mb-6" />
 
           <blockquote className="text-xl sm:text-2xl md:text-3xl text-stone-900 font-normal leading-relaxed mb-10">
-            &ldquo;{active.quote}&rdquo;
+            &ldquo;{displayQuote}&rdquo;
           </blockquote>
 
           <div className="flex flex-col sm:flex-row sm:items-center justify-between pt-8 border-t border-stone-100 gap-6">
@@ -52,7 +57,7 @@ export default function Testimonials() {
                   {active.author}
                 </h4>
                 <p className="text-xs text-stone-500">
-                  {active.location} • <span className="text-[#C88219] font-medium">{active.tourTaken}</span>
+                  {active.location} • <span className="text-[#C88219] font-medium">{displayTour}</span>
                 </p>
                 <div className="flex items-center gap-1 mt-1 text-[#C88219]">
                   {Array.from({ length: active.rating }).map((_, i) => (
