@@ -21,17 +21,21 @@ import {
   Star,
 } from "lucide-react";
 import { ethiopianDestinations } from "@/data/ethiopia";
+import TentCanvas from "@/components/ui/TentCanvas";
 
 export default function HeroAndDestinations() {
   const containerRef = useRef<HTMLDivElement>(null);
   const heroSectionRef = useRef<HTMLElement>(null);
   const destinationsSectionRef = useRef<HTMLElement>(null);
   const mountainRef = useRef<HTMLDivElement>(null);
-  const heroTitleAnchorRef = useRef<HTMLDivElement>(null);
+
+  // 3D Tent flight references
+  const heroTentAnchorRef = useRef<HTMLDivElement>(null);
   const targetSlotRef = useRef<HTMLDivElement>(null);
-  const floatingTextRef = useRef<HTMLDivElement>(null);
+  const floatingTentRef = useRef<HTMLDivElement>(null);
 
   const [mounted, setMounted] = useState(false);
+  const [tentScrollProgress, setTentScrollProgress] = useState(0);
 
   // Booking states
   const [destination, setDestination] = useState("Lalibela & Omo Valley");
@@ -60,13 +64,13 @@ export default function HeroAndDestinations() {
       gsap.registerPlugin(ScrollTrigger);
 
       const container = containerRef.current;
-      const floatingText = floatingTextRef.current;
-      const heroAnchor = heroTitleAnchorRef.current;
+      const floatingTent = floatingTentRef.current;
+      const heroAnchor = heroTentAnchorRef.current;
       const targetSlot = targetSlotRef.current;
       const heroSection = heroSectionRef.current;
       const destSection = destinationsSectionRef.current;
 
-      if (!container || !floatingText || !heroAnchor || !targetSlot || !heroSection || !destSection) {
+      if (!container || !floatingTent || !heroAnchor || !targetSlot || !heroSection || !destSection) {
         return;
       }
 
@@ -85,15 +89,11 @@ export default function HeroAndDestinations() {
         });
       }
 
-      // 2. HERO "NU-ENEZUR" TEXT FLIGHT ANIMATION INTO DESTINATIONS
+      // 2. 3D TENT SCROLL TRANSFORMATION: FROM HERO INTO DESTINATIONS
       const calculatePositions = () => {
         const containerRect = container.getBoundingClientRect();
         const heroRect = heroAnchor.getBoundingClientRect();
         const targetRect = targetSlot.getBoundingClientRect();
-
-        // Natural unscaled dimensions of the floating text
-        const naturalWidth = floatingText.offsetWidth || 1200;
-        const naturalHeight = floatingText.offsetHeight || 240;
 
         // Coordinates of Hero anchor center relative to container
         const x1 = heroRect.left - containerRect.left + heroRect.width / 2;
@@ -104,59 +104,57 @@ export default function HeroAndDestinations() {
         const y2 = targetRect.top - containerRect.top + targetRect.height / 2;
 
         // Scale ratio to fit into target slot
+        const naturalWidth = heroRect.width || 480;
+        const naturalHeight = heroRect.height || 360;
         const scaleX = targetRect.width / naturalWidth;
-        const scaleY = (targetRect.height * 1.25) / naturalHeight;
-        const scale = Math.max(0.2, Math.min(scaleX, scaleY));
+        const scaleY = targetRect.height / naturalHeight;
+        const scale = Math.max(0.35, Math.min(scaleX, scaleY));
 
         return { x1, y1, x2, y2, scale };
       };
 
-      // Set initial state on the floating text
+      // Set initial position
       const initialPos = calculatePositions();
 
-      gsap.set(floatingText, {
+      gsap.set(floatingTent, {
         x: initialPos.x1,
         y: initialPos.y1,
         xPercent: -50,
         yPercent: -50,
         scale: 1,
-        color: "#ffffff",
-        opacity: 0.95,
         force3D: true,
       });
 
-      // Create scroll-synchronized timeline
+      // Timeline that animates the 3D tent as the user scrolls
       const tl = gsap.timeline({
         scrollTrigger: {
           trigger: heroSection,
           start: "top top",
           endTrigger: destSection,
           end: "top 120px",
-          scrub: 1, // Smooth scrub tied directly to scroll position
-          invalidateOnRefresh: true, // Recalculates dynamically on resize
+          scrub: 1,
+          invalidateOnRefresh: true,
+          onUpdate: (self) => {
+            setTentScrollProgress(self.progress);
+          },
         },
       });
 
       tl.fromTo(
-        floatingText,
+        floatingTent,
         {
           x: () => calculatePositions().x1,
           y: () => calculatePositions().y1,
           scale: 1,
-          color: "#ffffff",
-          opacity: 0.95,
         },
         {
           x: () => calculatePositions().x2,
           y: () => calculatePositions().y2,
           scale: () => calculatePositions().scale,
-          color: "#143823", // Seamlessly darkens to deep green once it reaches cream Destinations
-          opacity: 0.92,
           ease: "power2.inOut",
         }
       );
 
-      // Force recalculation after layout settles
       ScrollTrigger.refresh();
     },
     { scope: containerRef, dependencies: [mounted] }
@@ -165,27 +163,26 @@ export default function HeroAndDestinations() {
   return (
     <div ref={containerRef} className="relative w-full overflow-hidden">
       {/* ========================================================
-          FLOATING HERO -> DESTINATIONS TYPOGRAPHY LAYER
+          FLOATING 3D TENT LAYER
           Positioned absolute inside containerRef at z-30.
-          Floats seamlessly over the hero and into the destinations
-          header without ever clipping or hiding behind cards.
+          Floats seamlessly from the Hero foreground down into the
+          Destinations header target slot.
           ======================================================== */}
       <div
-        ref={floatingTextRef}
-        className={`absolute top-0 left-0 z-30 pointer-events-none select-none font-black tracking-tighter uppercase font-sans whitespace-nowrap text-[14vw] leading-none will-change-transform ${
-          mounted ? "opacity-95" : "opacity-0"
-        }`}
+        ref={floatingTentRef}
+        className={`absolute top-0 left-0 z-30 pointer-events-none select-none will-change-transform w-[340px] h-[280px] sm:w-[440px] sm:h-[340px] md:w-[500px] md:h-[380px] ${
+          mounted ? "opacity-100" : "opacity-0"
+        } transition-opacity duration-500`}
         style={{
           transformOrigin: "center center",
-          backfaceVisibility: "hidden",
         }}
         aria-hidden="true"
       >
-        NU-ENEZUR
+        <TentCanvas scrollProgress={tentScrollProgress} />
       </div>
 
       {/* ========================================================
-          1. HERO SECTION (Layout, navigation & background intact)
+          1. HERO SECTION
           ======================================================== */}
       <section
         ref={heroSectionRef}
@@ -210,18 +207,24 @@ export default function HeroAndDestinations() {
           </div>
         </div>
 
-        {/* Hero Title Anchor: Preserves layout spacing, visible before JS mounts */}
-        <div
-          ref={heroTitleAnchorRef}
-          className="relative z-10 w-full text-center mt-6 md:mt-8 pointer-events-none select-none"
-        >
-          <h1
-            className={`text-[14vw] font-black tracking-tighter text-white/95 leading-none select-none uppercase drop-shadow-sm font-sans inline-block transition-opacity duration-300 ${
-              mounted ? "opacity-0" : "opacity-95"
-            }`}
-          >
-            NU-ENEZUR
-          </h1>
+        {/* Hero Top Center: 3D Tent Hero Anchor + Minimized "NU-ENEZUR" Title */}
+        <div className="relative z-20 w-full text-center mt-2 md:mt-4 pointer-events-none select-none flex flex-col items-center">
+          {/* Spatial Anchor where the 3D Tent starts in Hero (comes BEFORE the text) */}
+          <div
+            ref={heroTentAnchorRef}
+            className="w-[340px] h-[240px] sm:w-[440px] sm:h-[280px] md:w-[500px] md:h-[300px] mx-auto pointer-events-none select-none"
+            aria-hidden="true"
+          />
+
+          {/* Minimized, refined NU-ENEZUR typography */}
+          <div className="mt-2 text-center pointer-events-none">
+            <span className="text-[11px] sm:text-xs uppercase tracking-[0.35em] text-[#C88219] font-bold block mb-1">
+              Authentic Ethiopian Expeditions
+            </span>
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black tracking-tight text-white/95 uppercase drop-shadow-md font-sans">
+              NU-ENEZUR
+            </h1>
+          </div>
         </div>
 
         {/* Hero Bottom Mid Section: Heading on Left + Booking / Exploration Box on Right */}
@@ -338,7 +341,7 @@ export default function HeroAndDestinations() {
       </section>
 
       {/* ========================================================
-          2. DESTINATIONS SECTION (Target arrival area)
+          2. DESTINATIONS SECTION (Target arrival area for 3D tent)
           ======================================================== */}
       <section
         id="destinations"
@@ -346,27 +349,27 @@ export default function HeroAndDestinations() {
         className="relative z-10 pt-16 pb-8 md:pt-20 md:pb-10 bg-[#F8F6F0] text-stone-900 px-6 md:px-14"
       >
         <div className="max-w-7xl mx-auto">
-          {/* Subtitle tag */}
-          <span className="text-xs font-bold text-[#C88219] uppercase tracking-wider block mb-2">
-            Our Destinations
-          </span>
-
-          {/* Header row with heading on left, TARGET SLOT on right, and See All button */}
+          {/* Header row with heading on left, 3D Tent Target Slot in middle, and See All button on right */}
           <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-8 gap-6">
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-[#143823] leading-[1.15] max-w-xl">
-              Your Journey to the Heart of
-              <br />
-              Ethiopia Begins Here
-            </h2>
+            <div>
+              <span className="text-xs font-bold text-[#C88219] uppercase tracking-wider block mb-2">
+                Our Destinations
+              </span>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-[#143823] leading-[1.15] max-w-xl">
+                Your Journey to the Heart of
+                <br />
+                Ethiopia Begins Here
+              </h2>
+            </div>
 
-            {/* Target Area where the Hero NU-ENEZUR text lands on scroll */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 lg:self-end">
+            {/* Target Area where the 3D Tent lands on scroll */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 lg:self-end">
               <div
                 ref={targetSlotRef}
-                className="w-full sm:w-[280px] md:w-[380px] lg:w-[460px] h-12 md:h-16 flex items-center justify-center sm:justify-end pointer-events-none select-none"
+                className="w-[200px] sm:w-[240px] md:w-[280px] h-24 sm:h-28 md:h-32 flex items-center justify-center pointer-events-none select-none"
                 aria-hidden="true"
               >
-                {/* Invisible sizing anchor that mirrors target dimensions */}
+                {/* Sizing anchor for the 3D tent landing */}
               </div>
 
               <Link
