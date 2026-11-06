@@ -1,3 +1,4 @@
+import GlobalTentJourney from "@/components/animations/GlobalTentJourney";
 import HeroAndDestinations from "@/components/sections/HeroAndDestinations";
 import VisualShowcaseSection from "@/components/sections/VisualShowcaseSection";
 import PackagesSection from "@/components/sections/PackagesSection";
@@ -7,13 +8,13 @@ import FinalCTA from "@/components/sections/FinalCTA";
 
 export default function Home() {
   return (
-    <>
+    <GlobalTentJourney>
       <HeroAndDestinations />
       <VisualShowcaseSection />
       <PackagesSection />
       <WhyChooseNuEnezur />
       <Testimonials />
       <FinalCTA />
-    </>
+    </GlobalTentJourney>
   );
 }

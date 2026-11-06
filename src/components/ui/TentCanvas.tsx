@@ -160,11 +160,16 @@ export default function TentCanvas({
         let targetRotZ: number;
 
         if (lookAtMouse) {
-          // Dedicated cursor-focus mode:
-          // The head and front opening of the tent pivot to watch the mouse
-          targetRotY = -0.42 + currentMouseX * 0.9;
-          targetRotX = 0.12 + currentMouseY * 0.5;
-          targetRotZ = 0.04 - currentMouseX * 0.14;
+          // Dedicated cursor-focus mode combined with scroll journey rotation:
+          // The head and front opening of the tent pivot to watch the mouse,
+          // while progressing naturally through the scroll timeline
+          const scrollRotY = p * 1.4;
+          const scrollRotX = -p * 0.1;
+          const scrollRotZ = Math.sin(p * Math.PI) * 0.12;
+
+          targetRotY = -0.42 + scrollRotY + currentMouseX * 0.8;
+          targetRotX = 0.12 + scrollRotX + currentMouseY * 0.45;
+          targetRotZ = 0.04 + scrollRotZ - currentMouseX * 0.12;
         } else {
           // Flight / scroll driven mode with subtle mouse tracking
           targetRotY = -0.42 + p * 1.5 + currentMouseX * 0.4;

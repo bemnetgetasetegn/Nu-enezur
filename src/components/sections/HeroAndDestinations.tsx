@@ -22,7 +22,6 @@ import {
   Sparkles,
 } from "lucide-react";
 import { ethiopianDestinations } from "@/data/ethiopia";
-import TentCanvas from "@/components/ui/TentCanvas";
 import { useLanguage } from "@/context/LanguageContext";
 
 export default function HeroAndDestinations() {
@@ -32,21 +31,16 @@ export default function HeroAndDestinations() {
   const destinationsSectionRef = useRef<HTMLElement>(null);
   const mountainRef = useRef<HTMLDivElement>(null);
 
-  // 3D Tent flight references
+  // 3D Tent Spatial Anchor Refs
   const heroTentAnchorRef = useRef<HTMLDivElement>(null);
   const destHeaderSlotRef = useRef<HTMLDivElement>(null);
   const expeditionSlotRef = useRef<HTMLDivElement>(null);
-  const floatingTentRef = useRef<HTMLDivElement>(null);
-
-  const [mounted, setMounted] = useState(false);
-  const [tentScrollProgress, setTentScrollProgress] = useState(0);
 
   // Booking states
   const [destination, setDestination] = useState("");
   const [date, setDate] = useState("");
   const [guests, setGuests] = useState("");
 
-  // Keep booking inputs aligned with active language if untouched
   const activeDestination = destination || t.hero.destinationDefault;
   const activeDate = date || t.hero.seasonDefault;
   const activeGuests = guests || t.hero.travelersDefault;
@@ -64,154 +58,30 @@ export default function HeroAndDestinations() {
 
   const visibleCards = ethiopianDestinations.slice(startIndex, startIndex + 3);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
+  // 1. Mountain subtle parallax zoom on scroll
   useGSAP(
     () => {
       gsap.registerPlugin(ScrollTrigger);
-
-      const container = containerRef.current;
-      const floatingTent = floatingTentRef.current;
-      const heroAnchor = heroTentAnchorRef.current;
-      const destHeaderSlot = destHeaderSlotRef.current;
-      const expeditionSlot = expeditionSlotRef.current;
       const heroSection = heroSectionRef.current;
+      if (!heroSection || !mountainRef.current) return;
 
-      if (!container || !floatingTent || !heroAnchor || !destHeaderSlot || !expeditionSlot || !heroSection) {
-        return;
-      }
-
-      // 1. Mountain subtle parallax zoom on scroll
-      if (mountainRef.current) {
-        gsap.to(mountainRef.current, {
-          scale: 1.08,
-          yPercent: 12,
-          ease: "none",
-          scrollTrigger: {
-            trigger: heroSection,
-            start: "top top",
-            end: "bottom top",
-            scrub: true,
-          },
-        });
-      }
-
-      // 2. 3D TENT MULTI-STAGE TRAJECTORY:
-      // Hero Left Anchor -> Destinations Header Slot (Image 1) -> Behind Cards -> Expedition Basecamp (Bottom-Left)
-      const calculatePositions = () => {
-        const containerRect = container.getBoundingClientRect();
-        const heroRect = heroAnchor.getBoundingClientRect();
-        const headerRect = destHeaderSlot.getBoundingClientRect();
-        const expeditionRect = expeditionSlot.getBoundingClientRect();
-
-        const naturalWidth = heroRect.width || 480;
-        const naturalHeight = heroRect.height || 360;
-
-        // Stage 1: Hero left anchor center
-        const x1 = heroRect.left - containerRect.left + heroRect.width / 2;
-        const y1 = heroRect.top - containerRect.top + heroRect.height / 2;
-        const scale1 = 1;
-
-        // Stage 2: Destinations Header slot center (Image 1 - between heading & button)
-        const x2 = headerRect.left - containerRect.left + headerRect.width / 2;
-        const y2 = headerRect.top - containerRect.top + headerRect.height / 2;
-        const scale2 = Math.max(0.48, Math.min(headerRect.width / naturalWidth, headerRect.height / naturalHeight, 0.65));
-
-        // Stage 3: Destinations Expedition Basecamp slot center (Bottom-Left)
-        const x3 = expeditionRect.left - containerRect.left + expeditionRect.width / 2;
-        const y3 = expeditionRect.top - containerRect.top + expeditionRect.height / 2;
-        const scale3 = Math.max(0.42, Math.min(expeditionRect.width / naturalWidth, expeditionRect.height / naturalHeight, 0.52));
-
-        return { x1, y1, scale1, x2, y2, scale2, x3, y3, scale3 };
-      };
-
-      // Set initial position at Hero left anchor
-      const initialPos = calculatePositions();
-
-      gsap.set(floatingTent, {
-        x: initialPos.x1,
-        y: initialPos.y1,
-        xPercent: -50,
-        yPercent: -50,
-        scale: 1,
-        force3D: true,
-      });
-
-      // Smooth scrub timeline across the full Hero -> Destinations sequence
-      const tl = gsap.timeline({
+      gsap.to(mountainRef.current, {
+        scale: 1.08,
+        yPercent: 12,
+        ease: "none",
         scrollTrigger: {
           trigger: heroSection,
           start: "top top",
-          endTrigger: expeditionSlot,
-          end: "center 80%",
-          scrub: 1.2,
-          invalidateOnRefresh: true,
-          onUpdate: (self) => {
-            setTentScrollProgress(self.progress);
-          },
+          end: "bottom top",
+          scrub: true,
         },
       });
-
-      // Segment A: Hero Left -> Destinations Header Slot (Image 1)
-      tl.fromTo(
-        floatingTent,
-        {
-          x: () => calculatePositions().x1,
-          y: () => calculatePositions().y1,
-          scale: 1,
-        },
-        {
-          x: () => calculatePositions().x2,
-          y: () => calculatePositions().y2,
-          scale: () => calculatePositions().scale2,
-          ease: "power2.inOut",
-          duration: 0.45,
-        }
-      )
-      // Segment B: Brief pause in Destinations Header Slot as section arrives
-      .to(floatingTent, {
-        x: () => calculatePositions().x2,
-        y: () => calculatePositions().y2,
-        scale: () => calculatePositions().scale2,
-        duration: 0.08,
-      })
-      // Segment C: Glides BEHIND the destination cards down to Expedition Basecamp
-      .to(floatingTent, {
-        x: () => calculatePositions().x3,
-        y: () => calculatePositions().y3,
-        scale: () => calculatePositions().scale3,
-        ease: "power2.inOut",
-        duration: 0.47,
-      });
-
-      ScrollTrigger.refresh();
     },
-    { scope: containerRef, dependencies: [mounted] }
+    { scope: containerRef }
   );
 
   return (
-    <div ref={containerRef} className="relative w-full overflow-hidden">
-      {/* ========================================================
-          FLOATING 3D TENT LAYER
-          Positioned absolute inside containerRef at z-10.
-          Starts in Hero (Left side) -> glides into Destinations Header
-          slot (Image 1) -> glides BEHIND destination cards (z-20) ->
-          settles in Expedition Basecamp slot at the bottom-left.
-          ======================================================== */}
-      <div
-        ref={floatingTentRef}
-        className={`absolute top-0 left-0 z-10 pointer-events-none select-none will-change-transform w-[340px] h-[280px] sm:w-[440px] sm:h-[340px] md:w-[480px] md:h-[380px] ${
-          mounted ? "opacity-100" : "opacity-0"
-        } transition-opacity duration-500`}
-        style={{
-          transformOrigin: "center center",
-        }}
-        aria-hidden="true"
-      >
-        <TentCanvas scrollProgress={tentScrollProgress} />
-      </div>
+    <div ref={containerRef} className="relative w-full">
 
       {/* ========================================================
           1. HERO SECTION (Side-by-side: Tent on Left, Text on Right)
@@ -245,6 +115,7 @@ export default function HeroAndDestinations() {
             {/* Left Column: 3D Tent Spatial Anchor */}
             <div className="lg:col-span-5 flex justify-center lg:justify-start">
               <div
+                id="hero-tent-anchor"
                 ref={heroTentAnchorRef}
                 className="w-[340px] h-[280px] sm:w-[420px] sm:h-[340px] md:w-[480px] md:h-[380px] pointer-events-none select-none flex items-center justify-center"
                 aria-hidden="true"
@@ -383,7 +254,7 @@ export default function HeroAndDestinations() {
       >
         <div className="max-w-7xl mx-auto">
           {/* Header row: Heading on left, 3D Tent slot in center/right (Image 1), See All button on right */}
-          <div className="relative z-20 flex flex-col lg:flex-row lg:items-end justify-between mb-8 gap-6">
+          <div className="relative z-30 flex flex-col lg:flex-row lg:items-end justify-between mb-8 gap-6">
             <div>
               <span className="text-xs font-bold text-[#C88219] uppercase tracking-wider block mb-2">
                 {t.destinations.badge}
@@ -400,6 +271,7 @@ export default function HeroAndDestinations() {
                 Matches Image 1 (red box between heading & button)
                 ======================================================== */}
             <div
+              id="dest-header-tent-anchor"
               ref={destHeaderSlotRef}
               className="w-[180px] sm:w-[220px] md:w-[260px] h-[100px] sm:h-[120px] shrink-0 flex items-center justify-center pointer-events-none select-none relative"
               aria-hidden="true"
@@ -416,8 +288,8 @@ export default function HeroAndDestinations() {
             </Link>
           </div>
 
-          {/* 3 Large Rounded Cards - Higher z-index (z-20) with solid opaque backgrounds so the tent smoothly glides BEHIND them without blocking card texts */}
-          <div className="relative z-20 grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
+          {/* 3 Large Rounded Cards - Higher z-index (z-30) with solid opaque backgrounds so the tent smoothly glides BEHIND them without blocking card texts */}
+          <div className="relative z-30 grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
             {visibleCards.map((card) => {
               const cardTrans = t.destinations.cards[card.id] || {};
               const cardName = cardTrans.name || card.name;
@@ -483,7 +355,7 @@ export default function HeroAndDestinations() {
           </div>
 
           {/* Center Bottom Arrow Pagination Navigation */}
-          <div className="relative z-20 flex items-center justify-center gap-3 mt-6">
+          <div className="relative z-30 flex items-center justify-center gap-3 mt-6">
             <button
               onClick={prev}
               className="w-8 h-8 rounded-full border border-stone-300 flex items-center justify-center text-stone-600 hover:border-[#143823] hover:bg-[#143823] hover:text-white transition-colors"
@@ -507,10 +379,11 @@ export default function HeroAndDestinations() {
               BOTTOM-LEFT ARRIVAL SLOT FOR 3D TENT (EXPEDITION BASECAMP)
               Matches the destination arrival in user reference.
               ======================================================== */}
-          <div className="relative z-20 mt-8 pt-6 border-t border-stone-200/80 flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="relative z-30 mt-8 pt-6 border-t border-stone-200/80 flex flex-col md:flex-row items-center justify-between gap-6">
             {/* The Target Slot for the 3D Tent on the LEFT */}
             <div className="flex items-center gap-5 w-full md:w-auto">
               <div
+                id="expedition-tent-anchor"
                 ref={expeditionSlotRef}
                 className="w-[200px] sm:w-[230px] md:w-[250px] h-[120px] sm:h-[135px] flex items-center justify-center pointer-events-none select-none relative shrink-0"
                 aria-hidden="true"

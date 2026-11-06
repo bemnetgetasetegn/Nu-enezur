@@ -4,7 +4,6 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { ShieldCheck, HeartHandshake, Coffee, Award } from "lucide-react";
-import TentCanvas from "@/components/ui/TentCanvas";
 import { useLanguage } from "@/context/LanguageContext";
 
 export default function WhyChooseNuEnezur() {
@@ -93,13 +92,15 @@ export default function WhyChooseNuEnezur() {
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-transparent via-[#143823]/30 to-[#0A1D12]/80" />
               </div>
 
-              {/* 3D Camping Tent - Actively watching and focusing on the cursor */}
-              <div className="relative z-10 w-full h-full pb-20 pt-6 px-4 flex items-center justify-center">
-                <TentCanvas className="w-full h-full" lookAtMouse={true} />
-              </div>
+              {/* 3D Camping Tent Arrival Anchor ("Second Home") */}
+              <div
+                id="why-tent-anchor"
+                className="relative z-10 w-full h-full pb-20 pt-6 px-4 flex items-center justify-center pointer-events-none select-none"
+                aria-hidden="true"
+              />
 
               {/* Floating Sustainable Operator Badge - PRESERVED COMPLETELY */}
-              <div className="absolute bottom-6 left-6 right-6 backdrop-blur-md bg-white/95 p-5 sm:p-6 rounded-2xl shadow-xl border border-white/40 flex items-center gap-4 z-20">
+              <div className="absolute bottom-6 left-6 right-6 backdrop-blur-md bg-white/95 p-5 sm:p-6 rounded-2xl shadow-xl border border-white/40 flex items-center gap-4 z-30">
                 <div className="relative w-14 h-14 rounded-full overflow-hidden bg-stone-100 p-1 shrink-0 border border-stone-200">
                   <Image
                     src="/brand/logo.png"

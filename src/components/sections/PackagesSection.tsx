@@ -1,63 +1,22 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { useGSAP } from "@gsap/react";
 import { ArrowUpRight, Clock, Users, CheckCircle2 } from "lucide-react";
 import { tourPackages } from "@/data/ethiopia";
-import TentCanvas from "@/components/ui/TentCanvas";
 import { useLanguage } from "@/context/LanguageContext";
 
 export default function PackagesSection() {
   const { t } = useLanguage();
-  const sectionRef = useRef<HTMLElement>(null);
-  const tentWrapperRef = useRef<HTMLDivElement>(null);
-  const [tentScrollProgress, setTentScrollProgress] = useState(0);
-
-  useGSAP(
-    () => {
-      gsap.registerPlugin(ScrollTrigger);
-
-      if (!sectionRef.current || !tentWrapperRef.current) return;
-
-      gsap.fromTo(
-        tentWrapperRef.current,
-        {
-          y: -35,
-          scale: 0.9,
-          opacity: 0.7,
-        },
-        {
-          y: 0,
-          scale: 1,
-          opacity: 1,
-          ease: "power2.out",
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            start: "top 80%",
-            end: "top 30%",
-            scrub: 1.2,
-            onUpdate: (self) => {
-              setTentScrollProgress(self.progress);
-            },
-          },
-        }
-      );
-    },
-    { scope: sectionRef }
-  );
 
   return (
     <section
       id="packages"
-      ref={sectionRef}
       className="py-24 md:py-32 bg-[#EFE9DB] text-stone-900 px-6 md:px-14 select-none relative"
     >
       <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-12 gap-6 relative z-10">
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-12 gap-6 relative z-30">
           <div className="max-w-xl">
             <span className="text-xs font-bold text-[#C88219] uppercase tracking-wider block mb-3">
               {t.packages.badge}
@@ -75,14 +34,10 @@ export default function PackagesSection() {
               Matches Image 2 (red box between description & button)
               ======================================================== */}
           <div
-            ref={tentWrapperRef}
+            id="packages-tent-anchor"
             className="w-[200px] sm:w-[240px] md:w-[260px] h-[120px] sm:h-[135px] shrink-0 flex items-center justify-center pointer-events-none select-none relative my-2 lg:my-0"
             aria-hidden="true"
-          >
-            <div className="w-full h-full relative">
-              <TentCanvas scrollProgress={tentScrollProgress} />
-            </div>
-          </div>
+          />
 
           <Link
             href="/packages"
@@ -95,8 +50,8 @@ export default function PackagesSection() {
           </Link>
         </div>
 
-        {/* Package Grid - Higher z-index (z-20) with solid white backgrounds so content is always fully readable without interference */}
-        <div className="relative z-20 grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* Package Grid - Higher z-index (z-30) with solid white backgrounds so content is always fully readable without interference */}
+        <div className="relative z-30 grid grid-cols-1 md:grid-cols-2 gap-8">
           {tourPackages.map((pkg) => {
             const pkgTrans = t.packages.cards[pkg.id] || {};
             const pkgTitle = pkgTrans.title || pkg.title;
